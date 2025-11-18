@@ -1,0 +1,278 @@
+/*************/
+/* IMPORT(S) */
+/*************/
+import java_cup.runtime.*;
+import ast.*;
+
+parser code 
+{:
+	public Lexer lexer;
+
+	public Parser(Lexer lexer)
+	{
+		super(lexer);
+		this.lexer = lexer;
+	}
+	public void report_error(String message, Object info)
+	{
+		System.out.print("ERROR >> ");		
+		System.out.print("[");
+		System.out.print(lexer.getLine());
+		System.out.print(":");
+		System.out.print(lexer.getTokenStartPosition());
+		System.out.print("] ");		
+		System.exit(0);
+	}
+:}
+
+/************************/
+/* CUSTOMIZE CUP PARSER */
+/************************/
+scan with
+{:
+	Symbol s;
+	s = lexer.next_token();
+	//System.out.print(s.sym);
+	System.out.print("[");
+	System.out.print(lexer.getLine());
+	System.out.print(":");
+	System.out.print(lexer.getTokenStartPosition());
+	System.out.print("] ");
+	System.out.print(TokenNames.terminalNames[s.sym]);
+	if (s.value != null)
+	{
+		System.out.print("( ");
+		System.out.print(s.value);
+		System.out.print(" )");
+	}
+	System.out.print("\n");
+	return s; 
+:};
+
+/*************/
+/* TERMINALS */
+/*************/
+terminal IF;
+terminal EQ;
+terminal DOT;
+terminal PLUS;
+terminal MINUS;
+terminal TIMES;
+terminal WHILE;
+terminal DIVIDE;
+terminal LPAREN;
+terminal RPAREN;
+terminal LBRACK;
+terminal RBRACK;
+terminal LBRACE;
+terminal RBRACE;
+terminal SEMICOLON;
+terminal ASSIGN;
+terminal TYPE_INT;
+terminal TYPE_STRING;
+terminal TYPE_VOID;
+terminal CLASS;
+terminal EXTENDS;
+terminal ARRAY;
+terminal RETURN;
+terminal ELSE;
+terminal NEW;
+terminal NIL;
+terminal LT;
+terminal GT;
+terminal COMMA;
+
+/*************/
+/* TERMINALS */
+/*************/
+terminal Integer INT;
+terminal String ID;
+terminal String STRING;
+
+/*****************/
+/* NON TERMINALS */
+/*****************/
+non terminal AstExp exp;
+non terminal AstVar var;
+non terminal AstStmt stmt;
+non terminal AstStmtList stmtList;
+non terminal AstProgram program;
+non terminal AstdecList decList;
+non terminal AstDec dec;
+non terminal AstType type;
+non terminal AstVarDec varDec;
+non terminal AstFuncDec funcDec;
+non terminal AstClassDec classDec;
+non terminal AstArrayTypedef arrayTypedef;
+non terminal AstParamList paramList;
+non terminal AstCField cField;
+non terminal AstcFieldList cFieldList;
+non terminal AstNewExp newExp;
+non terminal AstCallExp callExp;
+non terminal AstExpList expList;
+
+/***********************/
+/* OPERATOR PRECEDENCE */
+/***********************/
+precedence nonassoc ASSIGN;
+precedence left EQ;
+precedence left LT, GT;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE;
+precedence nonassoc LBRACK;
+precedence nonassoc LPAREN;
+precedence left DOT;	
+
+
+
+
+
+precedence left PLUS;
+precedence left MINUS;
+precedence left TIMES;
+precedence left DIVIDE;
+
+/************************/
+/* START WITH: stmtList */
+/************************/
+start with program;
+
+/********************/
+/* DERIVATION RULES */
+/********************/
+/* program ::= dec {dec} */
+program ::=decList:dl {:/*function*/:}
+; 
+
+decList ::= dec:d decList:dl {:/*function*/:}
+| dec:d {:/*function*/:}
+;
+/* dec ::= varDec | funcDec | classDec | arrayTypedef */
+dec ::= varDec:vd {:/*function*/:}
+| funcDec:fd {:/*function*/:}
+| classDec:cd {:/*function*/:}
+| arrayTypedef:atd {:/*function*/:}
+;
+/* type ::= TYPE_INT | TYPE_STRING | TYPE_VOID | ID */
+type ::= TYPE_INT:ti {:/*function*/:}
+| TYPE_STRING:ts {:/*function*/:}
+| TYPE_VOID:tv {:/*function*/:}
+| ID:id {:/*function*/:}
+;
+/* varDec ::= type ID [ ASSIGN exp ] SEMICOLON
+| type ID ASSIGN newExp SEMICOLON */
+varDec ::= type:t ID:id ASSIGN newExp:ne SEMICOLON {:/*function*/:}
+| type:t ID:id ASSIGN exp:e SEMICOLON {:/*function*/:}
+| type:t ID:id SEMICOLON {:/*function*/:}
+;
+/* funcDec ::= type ID LPAREN [ type ID { COMMA type ID } ] RPAREN LBRACE stmtList RBRACE */
+funcDec ::= type:t ID:id LPAREN paramList:pl RPAREN LBRACE stmtList:sl RBRACE {:/*function*/:}
+| type:t ID:id LPAREN RPAREN LBRACE stmtList:sl RBRACE {:/*function*/:}
+;
+paramList ::= type:t ID:id COMMA paramList:pl {:/*function*/:}
+| type:t ID:id {:/*function*/:}
+;
+/* stmtList ::= stmt { stmt } */
+stmtList	::=		stmt:s	stmtList:l		{: RESULT = new AstStmtList(s,l);    :}
+| stmt:s				{: RESULT = new AstStmtList(s,null); :}
+;
+/* classDec ::= CLASS ID [ EXTENDS ID ] LBRACE cField { cField } RBRACE */
+classDec ::= CLASS ID:id EXTENDS ID:id LBRACE cFieldList RBRACE {:/*function*/:}
+| CLASS ID:id LBRACE cFieldList RBRACE {:/*function*/:}
+;
+cFieldList ::= cField:cf cFieldList:cfl {:/*function*/:}
+| cField:cf {:/*function*/:}
+;
+
+/* cField ::= varDec | funcDec */
+cField ::= varDec:vd {:/*function*/:}
+| funcDec:fd {:/*function*/:}
+;
+
+/* arrayTypedef ::= ARRAY ID EQ type LBRACK RBRACK SEMICOLON */
+arrayTypedef ::= ARRAY ID:id EQ type:t LBRACK RBRACK SEMICOLON {:/*function*/:}
+;
+
+/* exp ::= var
+| LPAREN exp RPAREN
+| exp (PLUS | MINUS | TIMES | DIVIDE | LT | GT | EQ) exp
+| callExp
+| [ MINUS ] INT | NIL | STRING */
+exp ::= var:v {:/*function*/:}
+| LPAREN exp:e RPAREN {:/*function*/:}
+| exp:e1 PLUS exp:e2 {:/*function*/:}
+| exp:e1 MINUS exp:e2 {:/*function*/:}
+| exp:e1 TIMES exp:e2 {:/*function*/:}
+| exp:e1 DIVIDE exp:e2 {:/*function*/:}
+| exp:e1 LT exp:e2 {:/*function*/:}
+| exp:e1 GT exp:e2 {:/*function*/:}
+| exp:e1 EQ exp:e2 {:/*function*/:}
+| callExp:ce {:/*function*/:}
+| MINUS INT:i {:/*function*/:}
+| INT:i {:/*function*/:}
+| NIL {:/*function*/:}
+| STRING:s {:/*function*/:}
+;
+
+/*newExp ::= NEW type
+| NEW type LBRACK exp RBRACK */
+newExp ::= NEW type:t
+| NEW type:t LBRACK exp:e RBRACK
+;
+
+/*callExp ::= [ var DOT ] ID LPAREN [ exp { COMMA exp } ] RPAREN */
+callExp ::= var:v DOT ID:id LPAREN expList:el RPAREN {:/*function*/:}
+| ID:id LPAREN expList:el RPAREN {:/*function*/:}
+| var:v DOT ID:id LPAREN RPAREN {:/*function*/:}
+| ID:id LPAREN RPAREN {:/*function*/:}
+;
+expList ::= exp:e COMMA expList:el {:/*function*/:}
+| exp:e {:/*function*/:}
+;
+
+/*var ::= ID
+| var DOT ID
+| var LBRACK exp RBRACK */
+
+var	::= ID:name	{: RESULT = new AstVarSimple(name);       :}
+| var:v DOT ID:fieldName {: RESULT = new AstVarField(v,fieldName); :}
+| var:v LBRACK exp:e RBRACK	{: RESULT = new AstVarSubscript(v,e);     :}
+;
+
+/* stmt ::= varDec
+| var ASSIGN exp SEMICOLON
+| var ASSIGN newExp SEMICOLON
+| RETURN [ exp ] SEMICOLON
+| IF LPAREN exp RPAREN LBRACE stmtList RBRACE [ ELSE LBRACE stmtList RBRACE ]
+| WHILE LPAREN exp RPAREN LBRACE stmtList RBRACE
+| callExp SEMICOLON*/
+
+stmt ::= varDec:vd {:/*function*/:}
+| var:v ASSIGN exp:e SEMICOLON {:/*function*/:}
+| var:v ASSIGN newExp:ne SEMICOLON {:/*function*/:}
+| RETURN exp:e SEMICOLON {:/*function*/:}
+| RETURN SEMICOLON {:/*function*/:}
+| IF LPAREN exp:cond RPAREN LBRACE stmtList:thenPart RBRACE ELSE LBRACE stmtList:elsePart RBRACE {:/*function*/:}
+| IF LPAREN exp:cond RPAREN LBRACE stmtList:thenPart RBRACE {:/*function*/:}
+| WHILE LPAREN exp:cond RPAREN LBRACE stmtList:body RBRACE {:/*function*/:}
+| callExp:ce SEMICOLON {:/*function*/:}
+;	
+					
+
+
+/************
+EXAMPLE RULES
+*************
+exp			::=		INT:i								{: RESULT = new AstExpInt(i);          :}
+					| var:v								{: RESULT = new AstExpVar(v);          :}
+| exp:e1 PLUS  exp:e2				{: RESULT = new AstExpBinop(e1, e2, 0);:}
+| exp:e1 MINUS exp:e2				{: RESULT = new AstExpBinop(e1, e2, 1);:}
+;
+
+stmt		::=		var:v ASSIGN exp:e SEMICOLON								{: RESULT = new AstStmtAssign(v,e); :}
+| IF    LPAREN exp:cond RPAREN LBRACE stmtList:body RBRACE	{: RESULT = new AstStmtIf(   cond,body); :}
+| WHILE LPAREN exp:cond RPAREN LBRACE stmtList:body RBRACE	{: RESULT = new AstStmtWhile(cond,body); :}
+;
+*/
+
+
