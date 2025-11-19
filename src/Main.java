@@ -10,9 +10,9 @@ public class Main
 		Lexer l;
 		Parser p;
 		Symbol s;
-		AstStmtList ast;
-		FileReader fileReader;
-		PrintWriter fileWriter;
+		AstProgram  ast;
+		FileReader fileReader=null;
+		PrintWriter fileWriter=null;
 		String inputFileName = argv[0];
 		String outputFileName = argv[1];
 		
@@ -41,12 +41,21 @@ public class Main
 			/***********************************/
 			/* [5] 3 ... 2 ... 1 ... Parse !!! */
 			/***********************************/
-			ast = (AstStmtList) p.parse().value;
+			ast = (AstProgram) p.parse().value;
 			
 			/*************************/
 			/* [6] Print the AST ... */
 			/*************************/
-			ast.printMe();
+			if (ast != null) 
+			{
+                ast.printMe();
+                AstGraphviz.getInstance().finalizeFile();
+            }
+
+
+			fileWriter.println("OK");
+            fileWriter.flush();
+
 			
 			/*************************/
 			/* [7] Close output file */
@@ -59,11 +68,35 @@ public class Main
 			AstGraphviz.getInstance().finalizeFile();
     	}
 			     
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
+		catch (SyntaxErrorException e)
+        {
+            // Syntax error: must print ERROR(line)
+            try {
+                if (fileWriter == null) {
+                    fileWriter = new PrintWriter(outputFileName);
+                }
+                fileWriter.println("ERROR(" + e.getLine() + ")");
+                fileWriter.flush();
+            } catch (Exception ignored) {}
+        }
+        catch (Exception e)
+        {
+            // Anything else (including lexical error) -> plain ERROR
+            try {
+                if (fileWriter == null) {
+                    fileWriter = new PrintWriter(outputFileName);
+                }
+                fileWriter.println("ERROR");
+                fileWriter.flush();
+            } catch (Exception ignored) {}
+
+        }
+        finally
+        {
+            try {
+                if (fileReader != null) fileReader.close();
+            } catch (IOException ignored) {}
+            if (fileWriter != null) fileWriter.close();
+        }
+    }
 }
-
-

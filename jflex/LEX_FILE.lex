@@ -5,7 +5,7 @@
 /*************/
 /* USER CODE */
 /*************/
-   
+
 import java_cup.runtime.*;
 
 /******************************/
@@ -51,21 +51,21 @@ import java_cup.runtime.*;
 /* scanner actions.                                                          */  
 /*****************************************************************************/   
 %{
-	/*********************************************************************************/
-	/* Create a new java_cup.runtime.Symbol with information about the current token */
-	/*********************************************************************************/
-	private Symbol symbol(int type)               {return new Symbol(type, yyline, yycolumn);}
-	private Symbol symbol(int type, Object value) {return new Symbol(type, yyline, yycolumn, value);}
+    /*********************************************************************************/
+    /* Create a new java_cup.runtime.Symbol with information about the current token */
+    /*********************************************************************************/
+    private Symbol symbol(int type)               {return new Symbol(type, yyline, yycolumn);}
+    private Symbol symbol(int type, Object value) {return new Symbol(type, yyline, yycolumn, value);}
 
-	/*******************************************/
-	/* Enable line number extraction from main */
-	/*******************************************/
-	public int getLine()    { return yyline + 1; }
+    /*******************************************/
+    /* Enable line number extraction from main */
+    /*******************************************/
+    public int getLine() { return yyline + 1; } 
 
-	/**********************************************/
-	/* Enable token position extraction from main */
-	/**********************************************/
-	public int getTokenStartPosition() { return yycolumn + 1; }
+    /**********************************************/
+    /* Enable token position extraction from main */
+    /**********************************************/
+    public int getTokenStartPosition() { return yycolumn + 1; } 
 %}
 
 /***********************/
@@ -74,8 +74,32 @@ import java_cup.runtime.*;
 LineTerminator	= \r|\n|\r\n
 WhiteSpace		= {LineTerminator} | [ \t\f]
 INTEGER			= 0 | [1-9][0-9]*
-ID				= [a-zA-Z]+
-   
+LEADING_ZERO       = 0{Digit}+
+Letter 			= [a-zA-Z] 			
+Digit      		= [0-9]				
+ID				= {Letter}({Letter}|{Digit})*    		
+WhiteSpace_no_new_line=  [ \t\f]
+Quote 		= \"					
+StringLetter = {Letter}   			
+StringBody = {StringLetter}*   
+String = {Quote}{StringBody}{Quote}   				
+
+// state for the block comments :
+
+%state BLOCKCOMMENT
+
+AllowedPunctInTypeOneComment = [\(\)\[\]\{\}\?\!\+\-\*\/\.\;]
+AllowedPunctInTypeTwoComment = [\(\)\[\]\{\}\?\!\+\-\.\;]	
+TypeOneLineCommentCharAllowed = {Letter}|{Digit}|{WhiteSpace_no_new_line}|{AllowedPunctInTypeOneComment}
+TypeTwoBlockCommentCharAllowed = {Letter}|{Digit}|{WhiteSpace}|{AllowedPunctInTypeTwoComment}
+LineCommentStart  = "//"
+BlockCommentStart = "/*"
+BlockCommentEnd   = "*/"
+
+        // a line comment we will define as a macro, but a block comment we will define as a state :
+LineComment = {LineCommentStart}{TypeOneLineCommentCharAllowed}*{LineTerminator}
+
+
 /******************************/
 /* DOLLAR DOLLAR - DON'T TOUCH! */
 /******************************/
@@ -92,26 +116,82 @@ ID				= [a-zA-Z]+
 /* scanner is in the start state YYINITIAL.                   */
 /**************************************************************/
 
-<YYINITIAL> {
+<YYINITIAL> 
+{
 
-"if"				{ return symbol(TokenNames.IF);}
-"="					{ return symbol(TokenNames.EQ);}
-"."					{ return symbol(TokenNames.DOT);}
-"+"					{ return symbol(TokenNames.PLUS);}
-"-"					{ return symbol(TokenNames.MINUS);}
-"*"					{ return symbol(TokenNames.TIMES);}
+":="                 { return symbol(TokenNames.ASSIGN); }
+"("                  { return symbol(TokenNames.LPAREN); }
+")"                  { return symbol(TokenNames.RPAREN); }
+"["                  { return symbol(TokenNames.LBRACK); }
+"]"                  { return symbol(TokenNames.RBRACK); }
+"{"                  { return symbol(TokenNames.LBRACE); }
+"}"                  { return symbol(TokenNames.RBRACE); }
+"+"					 { return symbol(TokenNames.PLUS);}
+"-"					 { return symbol(TokenNames.MINUS);}
+"*"					 { return symbol(TokenNames.TIMES);}
+
+/* before trying to consume divide operation we need to check if it is the start of a comment*/
+
+{LineComment}       {/* just skip  */}
+{BlockCommentStart}       { yybegin(BLOCKCOMMENT); }
+
 "/"					{ return symbol(TokenNames.DIVIDE);}
-":="				{ return symbol(TokenNames.ASSIGN);}
-"("					{ return symbol(TokenNames.LPAREN);}
-")"					{ return symbol(TokenNames.RPAREN);}
-"["					{ return symbol(TokenNames.LBRACK);}
-"]"					{ return symbol(TokenNames.RBRACK);}
-"{"					{ return symbol(TokenNames.LBRACE);}
-"}"					{ return symbol(TokenNames.RBRACE);}
-";"					{ return symbol(TokenNames.SEMICOLON);}
-{ID}				{ return symbol(TokenNames.ID, yytext());}
-{INTEGER}			{ return symbol(TokenNames.INT, Integer.valueOf(yytext()));}
+","                  { return symbol(TokenNames.COMMA); }
+"."                  { return symbol(TokenNames.DOT); }
+";"                  { return symbol(TokenNames.SEMICOLON); }
+"="                  { return symbol(TokenNames.EQ); }
+"<"                  { return symbol(TokenNames.LT); }
+">"                  { return symbol(TokenNames.GT); }
+"array"              { return symbol(TokenNames.ARRAY); }
+"class"              { return symbol(TokenNames.CLASS); }
+"return"             { return symbol(TokenNames.RETURN); }
+"while"              { return symbol(TokenNames.WHILE); }
+"if"                 { return symbol(TokenNames.IF); }
+"else"               { return symbol(TokenNames.ELSE); }
+"new"                { return symbol(TokenNames.NEW); }
+"extends"            { return symbol(TokenNames.EXTENDS); }
+"nil"                { return symbol(TokenNames.NIL); }
+"int"                { return symbol(TokenNames.TYPE_INT); }
+"string"             { return symbol(TokenNames.TYPE_STRING); }
+"void"               { return symbol(TokenNames.TYPE_VOID); }
+
+{LEADING_ZERO}     { return symbol(TokenNames.ERROR); }
+
+
+{INTEGER}            
+{
+    try
+    {
+        int value = Integer.parseInt(yytext());
+        if (value < 0 || value > 32767) 
+        {
+         return symbol(TokenNames.ERROR); 
+        }
+    return symbol(TokenNames.INT, value);
+    }
+    catch(NumberFormatException e)
+    {
+        return symbol(TokenNames.ERROR); 
+    }
+}
+
+{String}   		{ return symbol(TokenNames.STRING, yytext()); }
+{ID}                 { return symbol(TokenNames.ID, yytext()); }
 {WhiteSpace}		{ /* just skip what was found, do nothing */ }
-{LineTerminator}	{ /* just skip what was found, do nothing */ }
+.  					{ return symbol(TokenNames.ERROR); }
 <<EOF>>				{ return symbol(TokenNames.EOF);}
+
+}
+
+<BLOCKCOMMENT> 
+{
+  
+  {BlockCommentEnd}                 { yybegin(YYINITIAL); }
+  {TypeTwoBlockCommentCharAllowed}+ { /* skip */ }
+
+  "/"                               { /* allow a lone slash in comments */ }
+  "*"                               { /* allow a lone star in comments  */ }
+  
+  .                                 { return symbol(TokenNames.ERROR);}
+  <<EOF>>                           { return symbol(TokenNames.ERROR);}
 }
