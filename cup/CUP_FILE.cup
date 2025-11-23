@@ -3,6 +3,7 @@
 /*************/
 import java_cup.runtime.*;
 import ast.*;
+import java.util.List;
 
 parser code 
 {:
@@ -47,7 +48,7 @@ scan with
 	}
 	System.out.print("\n");
 	return s; 
-:};
+:};    
 
 /*************/
 /* TERMINALS */
@@ -92,21 +93,21 @@ terminal String STRING;
 /*****************/
 /* NON TERMINALS */
 /*****************/
-non terminal AstExp exp;
+non terminal AstExp exp; //!
 non terminal AstVar var;
 non terminal AstStmt stmt;
 non terminal AstStmtList stmtList;
-non terminal AstProgram program;
-non terminal AstdecList decList;
-non terminal AstDec dec;
-non terminal AstType type;
-non terminal AstVarDec varDec;
-non terminal AstFuncDec funcDec;
-non terminal AstClassDec classDec;
+non terminal AstProgram program; //!
+non terminal java.util.List decList; //!
+non terminal AstDec dec; //!
+non terminal String type; //!
+non terminal AstVarDec varDec; //!
+non terminal AstFuncDec funcDec; //!
+non terminal AstClassDec classDec; //!
 non terminal AstArrayTypedef arrayTypedef;
-non terminal AstParamList paramList;
+non terminal java.util.List paramList;
 non terminal AstCField cField;
-non terminal AstcFieldList cFieldList;
+non terminal java.util.List cFieldList;
 non terminal AstNewExp newExp;
 non terminal AstCallExp callExp;
 non terminal AstExpList expList;
@@ -114,23 +115,14 @@ non terminal AstExpList expList;
 /***********************/
 /* OPERATOR PRECEDENCE */
 /***********************/
-precedence nonassoc ASSIGN;
+precedence left ASSIGN;
 precedence left EQ;
 precedence left LT, GT;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIVIDE;
-precedence nonassoc LBRACK;
-precedence nonassoc LPAREN;
+precedence left LBRACK;
+precedence left LPAREN;
 precedence left DOT;	
-
-
-
-
-
-precedence left PLUS;
-precedence left MINUS;
-precedence left TIMES;
-precedence left DIVIDE;
 
 /************************/
 /* START WITH: stmtList */
@@ -274,5 +266,3 @@ stmt		::=		var:v ASSIGN exp:e SEMICOLON								{: RESULT = new AstStmtAssign(v,e
 | WHILE LPAREN exp:cond RPAREN LBRACE stmtList:body RBRACE	{: RESULT = new AstStmtWhile(cond,body); :}
 ;
 */
-
-

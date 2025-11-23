@@ -6,7 +6,8 @@ public class AstExpBinop extends AstExp
 	public AstExp left;
 	public AstExp right;
 	
-	/******************/
+	/******************/ 
+
 	/* CONSTRUCTOR(S) */
 	/******************/
 	public AstExpBinop(AstExp left, AstExp right, int op)
