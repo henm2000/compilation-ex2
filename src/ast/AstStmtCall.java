@@ -2,11 +2,12 @@ package ast;
 
 public class AstStmtCall extends AstStmt {
     public AstExp call;
-
-    public AstStmtCall(AstExp call) {
+    public int line;
+    public AstStmtCall(AstExp call, int line) {
         serialNumber = AstNodeSerialNumber.getFresh();
         System.out.print("====================== stmt -> callExp SEMICOLON\n");
         this.call = call;
+        this.line = line;
     }
 
     public void printMe() {

@@ -6,15 +6,16 @@ public class AstExpCall extends AstExp
 {
     public AstVar receiver; // may be null for direct call
     public String methodName;
-    public List<AstExp> args;
-
-    public AstExpCall(AstVar receiver, String methodName, List<AstExp> args)
+    public List<AstExp> args;   
+    public int line;
+    public AstExpCall(AstVar receiver, String methodName, List<AstExp> args, int line)
     {
         serialNumber = AstNodeSerialNumber.getFresh();
         System.out.print("====================== exp -> callExp\n");
         this.receiver = receiver;
         this.methodName = methodName;
         this.args = args;
+        this.line = line;
     }
 
     public void printMe()

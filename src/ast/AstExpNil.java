@@ -2,10 +2,12 @@ package ast;
 
 public class AstExpNil extends AstExp
 {
-    public AstExpNil()
+    public int line;
+    public AstExpNil(int line)
     {
         serialNumber = AstNodeSerialNumber.getFresh();
         System.out.print("====================== exp -> NIL\n");
+        this.line = line;
     }
 
     public void printMe()

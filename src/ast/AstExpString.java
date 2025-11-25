@@ -3,12 +3,13 @@ package ast;
 public class AstExpString extends AstExp
 {
     public String value;
-
-    public AstExpString(String value)
+    public int line;
+    public AstExpString(String value, int line)
     {
         serialNumber = AstNodeSerialNumber.getFresh();
         System.out.print("====================== exp -> STRING\n");
         this.value = value;
+        this.line = line;
     }
 
     public void printMe()

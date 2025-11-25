@@ -6,11 +6,11 @@ public class AstVarSimple extends AstVar
 	/* simple variable name */
 	/************************/
 	public String name;
-	
+	public int line;
 	/******************/
 	/* CONSTRUCTOR(S) */
 	/******************/
-	public AstVarSimple(String name)
+	public AstVarSimple(String name, int line)
 	{
 		/******************************/
 		/* SET A UNIQUE SERIAL NUMBER */
@@ -26,6 +26,7 @@ public class AstVarSimple extends AstVar
 		/* COPY INPUT DATA MEMBERS ... */
 		/*******************************/
 		this.name = name;
+		this.line = line;
 	}
 
 	/**************************************************/

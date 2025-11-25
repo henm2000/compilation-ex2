@@ -80,9 +80,23 @@ public class Main
                 fileWriter.flush();
             } catch (Exception ignored) {}
         }
+        catch (Error e)
+        {
+            // Lexical error: must print ERROR (no brackets)
+            try 
+			{
+                if (fileWriter == null) {
+                    fileWriter = new PrintWriter(outputFileName);
+                }
+                fileWriter.print("ERROR");
+                fileWriter.flush();
+            } 
+			catch (Exception ignored) 
+			{}
+        }
         catch (Exception e)
         {
-            // Anything else (including lexical error) -> plain ERROR
+            // Anything else -> plain ERROR
             try 
 			{
                 if (fileWriter == null) {

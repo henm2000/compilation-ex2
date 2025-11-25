@@ -8,8 +8,9 @@ public class AstDecFunc extends AstDec
     public String name;
     public List<AstParam> params;
     public AstStmtList body;
-
-    public AstDecFunc(String returnType, String name, List<AstParam> params, AstStmtList body)
+    public int line;
+    
+    public AstDecFunc(String returnType, String name, List<AstParam> params, AstStmtList body, int line)
     {
         serialNumber = AstNodeSerialNumber.getFresh();
         System.out.print("====================== dec -> funcDec\n");
@@ -17,6 +18,7 @@ public class AstDecFunc extends AstDec
         this.name = name;
         this.params = params;
         this.body = body;
+        this.line = line;
     }
 
     public void printMe()

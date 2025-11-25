@@ -5,12 +5,13 @@ import java.util.List;
 public class AstProgram extends AstNode
 {
     public List<AstDec> decls;
-
-    public AstProgram(List<AstDec> decls)
+    public int line;
+    public AstProgram(List<AstDec> decls, int line)
     {
         serialNumber = AstNodeSerialNumber.getFresh();
         System.out.print("====================== program -> dec {dec}\n");
         this.decls = decls;
+        this.line = line;
     }
 
     public void printMe()

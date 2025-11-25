@@ -7,11 +7,11 @@ public class AstStmtAssign extends AstStmt
 	/***************/
 	public AstVar var;
 	public AstExp exp;
-
+	public int line;
 	/*******************/
 	/*  CONSTRUCTOR(S) */
 	/*******************/
-	public AstStmtAssign(AstVar var, AstExp exp)
+	public AstStmtAssign(AstVar var, AstExp exp, int line)
 	{
 		/******************************/
 		/* SET A UNIQUE SERIAL NUMBER */
@@ -28,6 +28,7 @@ public class AstStmtAssign extends AstStmt
 		/*******************************/
 		this.var = var;
 		this.exp = exp;
+		this.line = line;
 	}
 
 	/*********************************************************/
