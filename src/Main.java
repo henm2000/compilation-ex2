@@ -5,6 +5,7 @@ import ast.*;
 
 public class Main
 {
+	/*this code works on the pc*/ 
 	static public void main(String argv[])
 	{
 		Lexer l;
@@ -53,7 +54,7 @@ public class Main
             }
 
 
-			fileWriter.println("OK");
+			fileWriter.print("OK");
             fileWriter.flush();
 
 			
@@ -75,20 +76,26 @@ public class Main
                 if (fileWriter == null) {
                     fileWriter = new PrintWriter(outputFileName);
                 }
-                fileWriter.println("ERROR(" + e.getLine() + ")");
+                fileWriter.print("ERROR(" + e.getLine() + ")");
                 fileWriter.flush();
             } catch (Exception ignored) {}
         }
         catch (Exception e)
         {
             // Anything else (including lexical error) -> plain ERROR
-            try {
+            try 
+			{
                 if (fileWriter == null) {
                     fileWriter = new PrintWriter(outputFileName);
                 }
-                fileWriter.println("ERROR");
+                fileWriter.print("ERROR");
                 fileWriter.flush();
-            } catch (Exception ignored) {}
+            } 
+			catch (Exception ignored) 
+			{}
+			System.err.println("==== General exception caught in Main ====");
+    		e.printStackTrace(System.err);
+
 
         }
         finally
