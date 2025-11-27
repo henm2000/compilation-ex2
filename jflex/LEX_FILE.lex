@@ -133,6 +133,7 @@ LineComment = {LineCommentStart}{TypeOneLineCommentCharAllowed}*{LineTerminator}
 /* before trying to consume divide operation we need to check if it is the start of a comment*/
 
 {LineComment}       {/* just skip  */}
+{LineCommentStart}[^\r\n]*{LineTerminator} { return symbol(TokenNames.ERROR); }
 {BlockCommentStart}       { yybegin(BLOCKCOMMENT); }
 
 "/"					{ return symbol(TokenNames.DIVIDE);}
