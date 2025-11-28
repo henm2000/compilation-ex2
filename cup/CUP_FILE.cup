@@ -14,11 +14,6 @@ parser code
         super(lexer);
         this.lexer = lexer;
     }
-        public AstProgram raiseLexicalError()
-    {
-        throw new Error("Lexical error");
-    }
-    
     public void report_error(String message, Object info)
     {
 
@@ -138,7 +133,7 @@ start with program;
 program ::=
 
       
-      | dec:d decList:dl           
+      dec:d decList:dl           
       {: 
           java.util.ArrayList list = new java.util.ArrayList();
           list.add(d);
